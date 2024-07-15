@@ -82,6 +82,72 @@ def test_ja_to_en():
     )
 ```
 
+### ファイル翻訳
+
+ファイル翻訳APIは3つのエンドポイントがあります。登録 (set)、確認 (status)、取得 (get) です。set を行うと API サーバで翻訳が実行されますが、ファイル単位なのである程度の時間がかかります。そのため、登録時には PID のみが返ります。status は翻訳状況の確認、get でファイルを取得できます。
+
+#### `set_file(path)`
+
+`path` で翻訳元のファイルパスを指定します。PID が返りますが、この時点では処理が完了していない可能性があります。
+
+```python
+def test_translate_file():
+    client = APIClient(source_lang="ja", target_lang="en")
+    path = "tests/test_file.txt"
+    pid = client.set_file(path)
+
+# pid Example: 12345
+```
+
+#### `file_status()`
+
+ファイル翻訳の状況を確認できます。`state` は状態を表します。
+
+- -2: 失敗
+- 0: 待機中
+- 1: 処理中
+- 2: 完了
+
+```python
+def test_file_status():
+    client = APIClient()
+    res = client.file_status()
+
+# Example
+# [
+#     {
+#         'id': 71204,
+#         'register': '2024-07-15 09:49:24',
+#         'state': 2,
+#         'title': 'test_file.txt',
+#     },
+#     {
+#         'id': 71181,
+#         'register': '2024-07-14 15:19:50',
+#         'state': 2,
+#         'title': 'README_en_t',
+#     },
+# ]
+```
+
+#### `get_file(pid, encoding="utf-8", path=None)`
+
+API サーバから翻訳済みのファイルを取得して内容を返します。`path` を指定すると保存します。
+
+- `pid`: ファイル翻訳ID
+- `encoding` (オプション): デフォルトでは `utf-8`
+- `path` (オプション): 翻訳後のファイルを保存する場所
+
+```python
+def test_get_file():
+    client = APIClient()
+    path = "tests/test_file_result.txt"
+    res = client.get_file(pid=71204, path=path)
+
+# Example:
+# "ハイテク大手、革新的なAIツールを発表"
+```
+
 ## License
 
 本APIラッパーはMITライセンスにより提供されますが、利用には[みんなの自動翻訳＠TexTra®](https://mt-auto-minhon-mlt.ucri.jgn-x.jp/content/policy/)の利用規約に従う必要がありますのでご注意ください。

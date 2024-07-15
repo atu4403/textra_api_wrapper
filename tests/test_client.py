@@ -11,10 +11,7 @@ def test_client():
     assert res.original_text == text
     assert res.information["text-s"] == text
     assert res.information["text-t"] == expected
-    assert (
-        res.request_url
-        == "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/api/mt/generalNT_en_ja/"
-    )
+    assert res.request_url == "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/api/"
 
 
 def test_ja_to_en():
@@ -25,7 +22,4 @@ def test_ja_to_en():
     expected = "Hi everyone. My name is タロー."
     assert res.text == expected
     assert res.original_text == text
-    assert (
-        res.request_url
-        == "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/api/mt/generalNT_ja_en/"
-    )
+    assert res.request_url == "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/api/"
