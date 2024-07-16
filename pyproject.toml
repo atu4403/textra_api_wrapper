@@ -1,6 +1,6 @@
 [project]
 name = "textra-api-wrapper"
-version = "0.2.0"
+version = "0.3.0"
 description = "Add your description here"
 authors = [
     { name = "atu4403", email = "73111778+atu4403@users.noreply.github.com" },
@@ -26,6 +26,7 @@ dev-dependencies = [
     "pytest-mock>=3.14.0",
     "pytest-clarity>=1.0.1",
     "pytest-html>=4.1.1",
+    "pytest-snapshot>=0.9.0",
 ]
 
 [tool.hatch.metadata]

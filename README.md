@@ -59,7 +59,7 @@ def test_client():
     assert res.information["text-t"] == expected
     assert (
         res.request_url
-        == "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/api/mt/generalNT_en_ja/"
+        == "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/"
     )
 ```
 
@@ -88,16 +88,21 @@ def test_ja_to_en():
 
 #### `set_file(path)`
 
-`path` で翻訳元のファイルパスを指定します。PID が返りますが、この時点では処理が完了していない可能性があります。
+`path` で翻訳元のファイルパスを指定します。実行時点では処理が完了していない可能性があります。
+APIResponseParserのインスタンスが返ります。
+
+APIの仕様により、ファイルの拡張子は限定されています。サポート外の拡張子は内部で`.txt`に変換されます。
 
 ```python
-def test_translate_file():
-    client = APIClient(source_lang="ja", target_lang="en")
-    path = "tests/test_file.txt"
-    pid = client.set_file(path)
+client = APIClient()
+original_filepath = "tests/example_file.cfg"
+sample = client.set_file(original_filepath)
 
-# pid Example: 12345
+sample.get("pid") # 12345
+sample.request["title"] # "example_file"
 ```
+
+titleはファイル名から拡張子を除いたものになります。
 
 #### `file_status()`
 
@@ -109,17 +114,16 @@ def test_translate_file():
 - 2: 完了
 
 ```python
-def test_file_status():
-    client = APIClient()
-    res = client.file_status()
-
+client = APIClient()
+sample = client.file_status()
+sample.get('list')
 # Example
 # [
 #     {
 #         'id': 71204,
 #         'register': '2024-07-15 09:49:24',
 #         'state': 2,
-#         'title': 'test_file.txt',
+#         'title': 'test_file',
 #     },
 #     {
 #         'id': 71181,
@@ -128,6 +132,14 @@ def test_file_status():
 #         'title': 'README_en_t',
 #     },
 # ]
+
+sample.get_status({"id": 71204})
+# {
+#     'id': 71204,
+#     'register': '2024-07-15 09:49:24',
+#     'state': 2,
+#     'title': 'test_file',
+# }
 ```
 
 #### `get_file(pid, encoding="utf-8", path=None)`
