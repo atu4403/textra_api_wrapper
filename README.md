@@ -160,6 +160,45 @@ def test_get_file():
 # "ハイテク大手、革新的なAIツールを発表"
 ```
 
+#### translate_files(files, output_dir=None, sleep=15, encoding="utf-8", extension="txt")
+
+複数ファイルを一括で翻訳し、指定されたディレクトリに保存します。登録から取得の間ではサーバーの処理が終了するまで待機する必要があるため、`sleep`オプションを短くしても処理が速くなるわけではありません。
+
+##### 引数
+- **files** (list): 翻訳元ファイルのパスをリスト形式で指定します。例: `["path/to/file1.txt", "path/to/file2.txt"]`
+- **output_dir** (str, オプション): 翻訳されたファイルを保存するディレクトリ。指定しない場合、翻訳されたファイルは保存されません。
+- **sleep** (int, オプション): リクエスト間で待機する秒数。デフォルトは15秒です。
+- **encoding** (str, オプション): ファイルのエンコーディング。デフォルトは "utf-8" です。
+- **extension** (str, オプション): 翻訳されたファイルの拡張子。デフォルトは "txt" です。
+
+##### 使用例
+
+```python
+from textra_api_wrapper import APIClient
+
+def test_translate_files(tmpdir):
+    client = APIClient()
+    files = ["tests/text_en.cfg", "tests/text_en02.txt"]
+    res = client.translate_files(files, output_dir=tmpdir, extension="csv")
+    print(res)
+    # 出力例:
+    # [
+    #   "ハイテク大手、革新的なAIツールを発表...",
+    #   "太陽光発電でグリーンエネルギーのマイルストーンを達成..."
+    # ]
+```
+
+##### 注意事項
+- **サーバー処理の待機**: `sleep`オプションを短く設定しても処理速度は変わりません。サーバーの処理が終了するまで待機する必要があります。
+- **ファイル拡張子**: Textraの仕様により、翻訳できるファイルの拡張子は限定されています。サポート外の拡張子は内部的に`txt`に変更されるため、元の拡張子に戻すには`extension`を指定する必要があります。
+
+##### オプションの詳細
+- `output_dir`を指定しない場合、翻訳されたファイルは保存されません。出力結果は関数の戻り値として取得します。
+- `encoding`のデフォルト値は"utf-8"ですが、他のエンコーディングを使用する場合は適宜指定してください。
+- `extension`のデフォルト値は"txt"です。必要に応じて"csv"や他の拡張子を指定してください。
+
+
 ## License
 
-本APIラッパーはMITライセンスにより提供されますが、利用には[みんなの自動翻訳＠TexTra®](https://mt-auto-minhon-mlt.ucri.jgn-x.jp/content/policy/)の利用規約に従う必要がありますのでご注意ください。
+本APIラッパーはMITライセンスにより提供されますが、利用には[みんなの自動翻訳＠TexTra®](https://mt-auto-minhon-mlt.ucri.jgn-x.jp/content/policy/)の利用規約に従う必要がありますのでご注意ください。  
+詳細については[LICENSE](LICENSE)ファイルを参照してください。
