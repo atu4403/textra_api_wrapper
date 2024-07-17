@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from textra_api_wrapper import APIClient
-from textra_api_wrapper.client import APIResponseParser
+from textra_api_wrapper.api_response_parser import APIResponseParser
 
 
 @pytest.mark.slow
@@ -95,3 +95,92 @@ def test_file_status_return():
     assert sample.get_status({"title": "text_en"}) == sample_dict
     assert sample.get_status({"state": 0}) == sample_dict
     assert sample.get_status({"id": 12345}) is None
+
+
+def effect(state, pid, title):
+    return APIResponseParser(
+        {
+            "resultset": {
+                "code": 0,
+                "message": "",
+                "request": {
+                    "url": "https://mt-auto-minhon-mlt.ucri.jgn-x.jp/api/",
+                },
+                "result": {
+                    "list": [
+                        {
+                            "id": pid,
+                            "title": title,
+                            "state": state,
+                            "register": "2024-07-16 09:42:53",
+                        }
+                    ]
+                },
+            }
+        }
+    )
+
+
+@pytest.fixture
+def mock_file_status(mocker):
+    return mocker.patch.object(
+        APIClient,
+        "file_status",
+        side_effect=[
+            effect(0, 12345, "text_en_01"),
+            effect(1, 12345, "text_en_01"),
+            effect(2, 12345, "text_en_01"),
+            effect(0, 67890, "text_en_02"),
+            effect(1, 67890, "text_en_02"),
+            effect(2, 67890, "text_en_02"),
+        ],
+    )
+
+
+@pytest.fixture
+def mock_get_file(mocker):
+    return mocker.patch.object(
+        APIClient, "get_file", side_effect=["case 1", "case 2", "case 3"]
+    )
+
+
+class TestFile:
+    def test_wait_completion(self, mock_file_status):
+        client = APIClient()
+        for i, status in enumerate(client.wait_completion(12345, sleep=0.1)):
+            if i == 0:
+                assert status == "waiting"
+            elif i == 1:
+                assert status == "now translating"
+            elif i == 2:
+                assert status == ["text_en_01"]
+            else:
+                raise AssertionError("Unexpected status: {}".format(status))
+
+        assert mock_file_status.call_count == 3
+
+    def test_get_files(self, mock_get_file, mock_file_status, mocker):
+        client = APIClient()
+        files = client.get_files(
+            [12345, 67890], sleep=0.1, output_dir="/tmp", extension="csv"
+        )
+        assert mock_get_file.call_count == 2
+        assert mock_file_status.call_count == 6
+        assert files == ["case 1", "case 2"]
+        assert mock_get_file.call_args_list == [
+            mocker.call(12345, path="/tmp/text_en_01.csv", encoding="utf-8"),
+            mocker.call(67890, path="/tmp/text_en_02.csv", encoding="utf-8"),
+        ]
+
+
+@pytest.mark.slow
+def test_translate_files(tmpdir):
+    client = APIClient()
+    files = ["tests/text_en.cfg", "tests/text_en02.txt"]
+    res = client.translate_files(files, output_dir=tmpdir, extension="csv")
+    new_file_1 = tmpdir.join("text_en.csv").read()
+    new_file_2 = tmpdir.join("text_en02.csv").read()
+    assert "ハイテク大手、革新的なAIツールを発表" in new_file_1
+    assert "太陽光発電でグリーンエネルギーのマイルストーンを達成" in new_file_2
+    assert res[0] == new_file_1
+    assert res[1] == new_file_2

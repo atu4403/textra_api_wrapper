@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2024-07-17
+### Added
+- **translate_filesメソッドを追加**
+  - ファイル翻訳APIに複数のファイルを登録、取得するメソッド `translate_files` を追加
+
+### Refactored
+- コードのリファクタリング
+  - classを3つに分類し、別のファイルに分割
+
 ## [0.3.0] - 2024-07-16
 ### Added
 - **重複登録の防止機能**:
